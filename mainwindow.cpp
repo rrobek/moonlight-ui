@@ -49,18 +49,18 @@ void MainWindow::on_runButton_clicked()
 
 void MainWindow::logMessage(QString msg)
 {
-    logList->addItem(msg);
+    logList->addItem(msg.trimmed());
     logList->scrollToBottom();
 }
 
 void MainWindow::dialogMessage(QString msg)
 {
-    QMessageBox::information(this, qApp->applicationName(), msg);
+    QMessageBox::information(this, qApp->applicationName(), msg.trimmed());
 }
 
 void MainWindow::dialogError(QString err)
 {
-    QMessageBox::critical(this, qApp->applicationName(), err);
+    QMessageBox::critical(this, qApp->applicationName(), err.trimmed());
 }
 
 void MainWindow::serverInfo(QString server)
