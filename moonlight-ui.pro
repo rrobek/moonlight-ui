@@ -13,8 +13,10 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    moonlighttask.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    moonlighttask.h
 
 FORMS    += mainwindow.ui
