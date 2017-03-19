@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include "moonlighttask.h"
+#include "optionsdialog.h"
 
 #include <QMessageBox>
 
@@ -29,7 +30,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_actionOptions_triggered()
 {
-
+    OptionsDialog dlg(this);
+    dlg.exec();
 }
 
 void MainWindow::on_actionPair_triggered()

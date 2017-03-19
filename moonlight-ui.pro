@@ -14,9 +14,12 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    moonlighttask.cpp
+    moonlighttask.cpp \
+    optionsdialog.cpp
 
 HEADERS  += mainwindow.h \
-    moonlighttask.h
+    moonlighttask.h \
+    optionsdialog.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    optionsdialog.ui
