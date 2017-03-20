@@ -2,6 +2,7 @@
 #include "ui_optionsdialog.h"
 
 #include <QSettings>
+#include <QFileDialog>
 
 /*
  *
@@ -27,6 +28,27 @@
 #define OPTION_CODEC_DEFAULT "-h264"
 #define OPTION_SYSOPS "SysOps"
 #define OPTION_AUDIO "Audio"
+
+Options OptionsDialog::getOptions(bool forStreamCommand)
+{
+    Options r;
+
+    QSettings s;
+    s.beginGroup(OPTION_GROUP);
+    r.executable = s.value(OPTION_APPNAME, OPTION_APPNAME_DEFAULT).toString();
+    r.server = s.value(OPTION_SERVER).toString();
+    if(forStreamCommand) {
+        r.args << s.value(OPTION_RESOLUTION).toString();
+        r.args << s.value(OPTION_FRAMERATE).toString();
+        int kbps = s.value(OPTION_BITRATE).toInt() * 1000;
+        if(kbps > 0) r.args << "-bitrate" << QString::number(kbps);
+        r.args << s.value(OPTION_CODEC, OPTION_CODEC_DEFAULT).toString();
+        bool sops = s.value(OPTION_SYSOPS).toBool();
+        if(!sops) r.args << "-nosops";
+        r.args << s.value(OPTION_AUDIO).toString();
+    }
+    return r;
+}
 
 OptionsDialog::OptionsDialog(QWidget *parent) :
     QDialog(parent)
@@ -55,10 +77,12 @@ OptionsDialog::OptionsDialog(QWidget *parent) :
     editServer->setText(s.value(OPTION_SERVER).toString());
     comboSelect(cbResolution, s.value(OPTION_RESOLUTION).toString());
     comboSelect(cbFrameRate, s.value(OPTION_FRAMERATE).toString());
-    sbBitRate->setValue(s.value(OPTION_BITRATE).toInt());
+    sbBitRate->setValue(abs(s.value(OPTION_BITRATE).toInt()));
     cbBitRateAuto->setChecked(sbBitRate->value() <= 0);
+    sbBitRate->setEnabled(!cbBitRateAuto->isChecked());
     comboSelect(cbCodec, s.value(OPTION_CODEC, OPTION_CODEC_DEFAULT).toString());
-    rbSysOpsYes->setChecked(s.value(OPTION_SYSOPS).toBool());
+    bool sops = s.value(OPTION_SYSOPS).toBool();
+    rbSysOpsYes->setChecked(sops); rbSysOpsNo->setChecked(!sops);
     comboSelect(cbAudio, s.value(OPTION_AUDIO).toString());
 
     // Set size
@@ -74,18 +98,40 @@ OptionsDialog::~OptionsDialog()
 
 void OptionsDialog::on_btnAppName_clicked()
 {
-
+    QFileInfo fi(editAppName->text());
+    QString dir = fi.dir().dirName();
+    if(dir.length() <= 1) dir = "/usr/bin";
+    QFileDialog fd(this, "Select Moonlight executable");
+    fd.setFilter(QDir::Executable | QDir::Files);
+    fd.setFileMode(QFileDialog::ExistingFile);
+    int r = fd.exec();
+    if(r == QDialog::Accepted)
+        editAppName->setText(fd.selectedFiles().first());
 }
 
 void OptionsDialog::on_cbBitRateAuto_clicked(bool checked)
 {
-
+    sbBitRate->setEnabled(!checked);
 }
 
 void OptionsDialog::done(int result)
 {
     if(result == QDialog::Accepted) {
         // TODO save settings
+        QSettings s;
+        s.beginGroup(OPTION_GROUP);
+
+        s.setValue(OPTION_APPNAME, editAppName->text());
+        s.setValue(OPTION_SERVER, editServer->text());
+        s.setValue(OPTION_RESOLUTION, comboGetValue(cbResolution));
+        s.setValue(OPTION_FRAMERATE, comboGetValue(cbFrameRate));
+        int vbit = sbBitRate->value();
+        if(cbBitRateAuto->isChecked()) vbit *= -1;
+        s.setValue(OPTION_BITRATE, vbit);
+        s.setValue(OPTION_CODEC, comboGetValue(cbCodec));
+        s.setValue(OPTION_SYSOPS, rbSysOpsYes->isChecked());
+        s.setValue(OPTION_AUDIO, comboGetValue(cbAudio));
+
     }
     // End dialog
     QDialog::done(result);

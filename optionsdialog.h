@@ -6,11 +6,20 @@
 
 #include "ui_optionsdialog.h"
 
+struct Options
+{
+    QString executable;
+    QString server;
+    QStringList args;
+};
+
 class OptionsDialog : public QDialog, private Ui_OptionsDialog
 {
     Q_OBJECT
 
 public:
+    static Options getOptions(bool forStreamCommand);
+
     explicit OptionsDialog(QWidget *parent = 0);
     ~OptionsDialog();
 

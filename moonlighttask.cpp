@@ -1,4 +1,5 @@
 #include "moonlighttask.h"
+#include "optionsdialog.h"
 
 MoonlightTask::MoonlightTask(QObject *parent, const QString &cmd, const QStringList &args) :
     QObject(parent), cmd(cmd), args(args)
@@ -7,14 +8,16 @@ MoonlightTask::MoonlightTask(QObject *parent, const QString &cmd, const QStringL
 
 void MoonlightTask::run()
 {
+    Options o = OptionsDialog::getOptions(isStreamCommand());
     proc = new QProcess(this);
-    QString prog = "moonlight"; // TODO moonlight path
+    QString prog = o.executable; // TODO moonlight path
     QStringList allArgs;
     allArgs << cmd;
     allArgs << "-uifriendly";
     allArgs << args;
+    allArgs << o.args;
+    allArgs << o.server;
     // TODO additional args as configured in options
-    //proc->setArguments(allArgs);
     proc->setReadChannel(QProcess::StandardOutput);
     // signals:
     connect(proc, SIGNAL(finished(int,QProcess::ExitStatus)), SLOT(finished(int,QProcess::ExitStatus)));
@@ -24,6 +27,15 @@ void MoonlightTask::run()
 
     // actually start:
     proc->start(prog, allArgs, QIODevice::ReadOnly | QIODevice::Text);
+}
+
+bool MoonlightTask::isStreamCommand()
+{
+    return cmd == "stream";
+}
+bool MoonlightTask::isStreaming()
+{
+    return isStreamCommand() && proc && proc->state() == QProcess::Running;
 }
 
 void MoonlightTask::procError(QProcess::ProcessError err)
@@ -41,7 +53,7 @@ void MoonlightTask::procError(QProcess::ProcessError err)
     emit finished();
 }
 
-void MoonlightTask::finished(int code, QProcess::ExitStatus stat)
+void MoonlightTask::finished(int code, QProcess::ExitStatus)
 {
     QString msg(QString("Task %1 completed with code %2.").arg(cmd).arg(code));
     emit logMessage(msg);

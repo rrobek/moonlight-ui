@@ -11,6 +11,9 @@ public:
     explicit MoonlightTask(QObject *parent, const QString& cmd, const QStringList& args);
     void run();
 
+    bool isStreamCommand();
+    bool isStreaming();
+
 signals:
     void logMessage(QString msg);
     void dialogMessage(QString msg);
@@ -22,7 +25,7 @@ signals:
     void finished();
 public slots:
     void procError(QProcess::ProcessError err);
-    void finished(int code, QProcess::ExitStatus stat);
+    void finished(int code, QProcess::ExitStatus);
     void readyReadStdErr();
     void readyReadStdOut();
 private:
