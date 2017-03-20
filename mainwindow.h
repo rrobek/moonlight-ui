@@ -20,6 +20,7 @@ public slots:
     void on_actionOptions_triggered();
     void on_actionPair_triggered();
     void on_actionUnpair_triggered();
+    void on_appList_itemActivated(QListWidgetItem* item);
     void on_runButton_clicked();
     // messages from the task
     void logMessage(QString msg);
@@ -29,12 +30,13 @@ public slots:
     void graphicsInfo(QString graphics);
     void streamInfo(QString stream);
     void appInfo(QStringList apps);
-    void taskFinished();
+    void taskFinished(QString task);
 private:
     QMenu* toolMenu;
     MoonlightTask* activeTask;
 
     void runTask(const QString &cmd, const QStringList &args = QStringList());
+    void refreshApps();
 };
 
 #endif // MAINWINDOW_H

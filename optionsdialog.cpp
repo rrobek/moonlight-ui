@@ -29,6 +29,12 @@
 #define OPTION_SYSOPS "SysOps"
 #define OPTION_AUDIO "Audio"
 
+static void appendArg(QStringList& list, const QString& arg)
+{
+    if(arg.trimmed().size())
+        list << arg;
+}
+
 Options OptionsDialog::getOptions(bool forStreamCommand)
 {
     Options r;
@@ -38,14 +44,14 @@ Options OptionsDialog::getOptions(bool forStreamCommand)
     r.executable = s.value(OPTION_APPNAME, OPTION_APPNAME_DEFAULT).toString();
     r.server = s.value(OPTION_SERVER).toString();
     if(forStreamCommand) {
-        r.args << s.value(OPTION_RESOLUTION).toString();
-        r.args << s.value(OPTION_FRAMERATE).toString();
+        appendArg(r.args, s.value(OPTION_RESOLUTION).toString());
+        appendArg(r.args, s.value(OPTION_FRAMERATE).toString());
         int kbps = s.value(OPTION_BITRATE).toInt() * 1000;
         if(kbps > 0) r.args << "-bitrate" << QString::number(kbps);
-        r.args << s.value(OPTION_CODEC, OPTION_CODEC_DEFAULT).toString();
+        appendArg(r.args, s.value(OPTION_CODEC, OPTION_CODEC_DEFAULT).toString());
         bool sops = s.value(OPTION_SYSOPS).toBool();
         if(!sops) r.args << "-nosops";
-        r.args << s.value(OPTION_AUDIO).toString();
+        appendArg(r.args, s.value(OPTION_AUDIO).toString());
     }
     return r;
 }

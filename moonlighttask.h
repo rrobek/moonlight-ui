@@ -22,7 +22,7 @@ signals:
     void graphicsInfo(QString graphics);
     void streamInfo(QString stream);
     void appInfo(QStringList apps);
-    void finished();
+    void finished(QString task);
 public slots:
     void procError(QProcess::ProcessError err);
     void finished(int code, QProcess::ExitStatus);
@@ -35,6 +35,8 @@ private:
 protected:
     QString cmd;
     QStringList args;
+
+    QStringList appNames;
 };
 
 #endif // MOONLIGHTTASK_H

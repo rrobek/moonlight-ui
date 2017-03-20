@@ -26,6 +26,9 @@ void MoonlightTask::run()
     connect(proc, SIGNAL(readyReadStandardError()), SLOT(readyReadStdErr()));
 
     // actually start:
+    QString msg(QString("Starting task ("));
+    msg.append(allArgs.join(",")).append(")");
+    emit logMessage(msg);
     proc->start(prog, allArgs, QIODevice::ReadOnly | QIODevice::Text);
 }
 
@@ -50,14 +53,16 @@ void MoonlightTask::procError(QProcess::ProcessError err)
         case QProcess::UnknownError: msg = "An unknown error occurred with the task."; break;
     }
     emit dialogError(msg);
-    emit finished();
+    emit finished(cmd);
 }
 
 void MoonlightTask::finished(int code, QProcess::ExitStatus)
 {
     QString msg(QString("Task %1 completed with code %2.").arg(cmd).arg(code));
     emit logMessage(msg);
-    emit finished();
+    if(appNames.size())
+        emit appInfo(appNames);
+    emit finished(cmd);
 }
 
 void MoonlightTask::readyReadStdErr()
@@ -74,9 +79,28 @@ void MoonlightTask::readyReadStdErr()
 void MoonlightTask::readyReadStdOut()
 {
     while(proc->canReadLine()) {
-        QString line = proc->readLine();
-        // TODO parse the line
-        emit logMessage(line);
+        QString line = proc->readLine().trimmed();
+        // parse the line
+        if(line.length() >= 2 && line[0].isLetter() && line[1] == ']') {
+            QString rest = line.mid(2);
+            switch(line[0].toLatin1()) {
+                case 'A':
+                    appNames << rest; break;
+                case 'G':
+                    emit graphicsInfo(rest); break;
+                case 'I':
+                    emit serverInfo(rest); break;
+                case 'S':
+                    emit streamInfo(rest); break;
+                case 'M':
+                case 'P':
+                    emit dialogMessage(rest); break;
+                default:
+                    emit logMessage(rest); break;
+            }
+        }
+        else
+            emit logMessage(line);
     }
 }
 
